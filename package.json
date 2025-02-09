@@ -11,6 +11,7 @@
   "type": "commonjs",
   "description": "",
   "dependencies": {
+    "@twilio/voice-sdk": "^2.12.3",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "twilio": "^5.4.3"

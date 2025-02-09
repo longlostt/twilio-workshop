@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const twilio = require('twilio');
 const path = require('path');
+const AccessToken = require('twilio').jwt.AccessToken;
+const VoiceGrant = AccessToken.VoiceGrant;
 
 const app = express(); 
 app.use(express.json()); 
@@ -9,12 +11,36 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
 
+app.post('/token', (req, res) => {
+    const identity = 'app-user'; // Unique identifier for EACH app user
+    const voiceGrant = new VoiceGrant({
+        outgoingApplicationSid: process.env.TWILIO_APP_SID, // Your TwiML App SID
+        incomingAllow: true, // Allow incoming calls
+    });
+
+    const token = new AccessToken(
+        process.env.TWILIO_SID,
+        process.env.TWILIO_API_KEY,
+        process.env.TWILIO_API_SECRET,
+        { identity }
+    );
+
+    token.addGrant(voiceGrant);
+    res.json({ token: token.toJwt() });
+});
+
 app.post('/twiml', (req, res) => {
     const twiml = new twilio.twiml.VoiceResponse();
-    
-    // Create a conference call room
-    twiml.dial().conference('MyConferenceRoom');  // Name the conference room
-    
+
+    // Check if the call is coming from the app user (WebRTC) or an external phone
+    if (req.body.Caller) {
+        // WebRTC caller (app user)
+        twiml.dial().conference('MyConferenceRoom');
+    } else {
+        // External phone caller
+        twiml.dial().conference('MyConferenceRoom');
+    }
+
     console.log('TwiML Response:', twiml.toString());
     res.type('text/xml');
     res.send(twiml.toString());
@@ -43,9 +69,5 @@ app.post('/call', async (req, res) => {
         res.status(500).json({ error: 'Failed to initiate call' });
     }
 });
-
-
-
-
 
 app.listen(3000, () => console.log('Server running on port 3000'));

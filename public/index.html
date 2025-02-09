@@ -1,32 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Conference Call</title>
+    <script src="twilio.js"></script>
 </head>
-
 <body>
     <p>Hello!</p>
     <button id="callButton">Call Me!</button>
     <script>
+        
+        // Initialize Twilio Voice SDK
+       
         document.getElementById('callButton').addEventListener('click', async () => {
             try {
                 // Request microphone access explicitly
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-                // You can now use the stream for WebRTC or other purposes
-                const response = await fetch('/call', { method: 'POST' });
-                const data = await response.json();
-                console.log('Call initiated!', data);
+                // Fetch a Twilio access token (you need to implement this endpoint)
+                const response = await fetch('/token', { method: 'POST' });
+                const call = await fetch('/call', { method: 'POST' });
+                const { token } = await response.json();
+                const device = new Twilio.Device(token);
+
+                // Connect to the conference room
+                device.connect({ params: { To: 'MyConferenceRoom' } });
+
+                console.log('Connecting to conference room...');
 
             } catch (error) {
-                console.error('Error accessing microphone:', error);
+                console.error('Error:', error);
             }
         });
+
+        // Handle connection events
+        // device.on('connect', (connection) => {
+        //     console.log('Connected to conference room!');
+        // });
+
+        // device.on('error', (error) => {
+        //     console.error('Twilio Device Error:', error);
+        // });
     </script>
-
 </body>
-
 </html>
