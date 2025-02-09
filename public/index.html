@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <p>Hello!</p>
+    <button id="callButton">Call Me!</button>
+    <script>
+        document.getElementById('callButton').addEventListener('click', async () => {
+            try {
+                // Request microphone access explicitly
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+                // You can now use the stream for WebRTC or other purposes
+                const response = await fetch('/call', { method: 'POST' });
+                const data = await response.json();
+                console.log('Call initiated!', data);
+
+            } catch (error) {
+                console.error('Error accessing microphone:', error);
+            }
+        });
+    </script>
+
+</body>
+
+</html>
